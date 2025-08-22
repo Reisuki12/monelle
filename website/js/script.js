@@ -174,63 +174,6 @@ function createFloatingHeart() {
   });
 }
 
-// Photo Carousel - Static photos only
-const photos = [
-  'https://via.placeholder.com/600x300/ff69b4/white?text=Mica+Memory+1',
-  'https://via.placeholder.com/600x300/a3c9f7/white?text=Mica+Memory+2',
-  'https://via.placeholder.com/600x300/e6f0ff/333?text=Mica+Memory+3',
-  'https://via.placeholder.com/600x300/3498db/white?text=Mica+Memory+4'
-];
-
-let currentSlide = 0;
-
-function initCarousel() {
-  renderCarousel();
-}
-
-function renderCarousel() {
-  const track = document.getElementById('carouselTrack');
-  if (!track) return;
-  
-  track.innerHTML = '';
-  
-  photos.forEach((photo, index) => {
-    const slide = document.createElement('div');
-    slide.className = 'carousel-slide';
-    slide.innerHTML = `<img src="${photo}" alt="Memory ${index + 1}" style="width: 100%; height: 100%; object-fit: cover;">`;
-    track.appendChild(slide);
-  });
-  
-  updateCarousel();
-}
-
-function updateCarousel() {
-  const track = document.getElementById('carouselTrack');
-  if (!track) return;
-  
-  track.style.transform = `translateX(-${currentSlide * 100}%)`;
-}
-
-// Navigation
-document.addEventListener('DOMContentLoaded', () => {
-  const nextBtn = document.getElementById('nextBtn');
-  const prevBtn = document.getElementById('prevBtn');
-  
-  if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
-      currentSlide = (currentSlide + 1) % photos.length;
-      updateCarousel();
-    });
-  }
-  
-  if (prevBtn) {
-    prevBtn.addEventListener('click', () => {
-      currentSlide = (currentSlide - 1 + photos.length) % photos.length;
-      updateCarousel();
-    });
-  }
-});
-
 // Floating Balloons
 function createFloatingBalloon() {
   const balloons = ['🎈', '🎆', '🎉'];
@@ -317,17 +260,6 @@ function initScrollAnimations() {
             });
           }, 300);
         }
-        
-        // Special animation for photo carousel
-        if (entry.target.id === 'photoCarousel') {
-          gsap.from('#carouselTrack', {
-            duration: 1,
-            x: -100,
-            opacity: 0,
-            delay: 0.3,
-            ease: 'power2.out'
-          });
-        }
       }
     });
   }, { threshold: 0.2 });
@@ -338,7 +270,6 @@ function initScrollAnimations() {
 }
 
 // Initialize everything
-initCarousel();
 initScrollAnimations();
 
 // Start ambient animations
