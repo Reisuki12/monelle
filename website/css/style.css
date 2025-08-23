@@ -1,3 +1,5 @@
+@import url('https://fonts.cdnfonts.com/css/ica-rubrik-black');
+
 body {
     font-family: 'Poppins', sans-serif;
     text-align: center;
@@ -64,7 +66,7 @@ section {
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
     margin: 20px auto;
-    max-width: 600px;
+    max-width: 1000px;
 }
 
 #messagesWall {
@@ -165,70 +167,6 @@ section {
   transform: translateY(0) !important;
 }
 
-/* Photo Carousel */
-#photoCarousel {
-  margin: 40px auto;
-  max-width: 600px;
-  text-align: center;
-}
-
-
-
-.carousel-container {
-  position: relative;
-  width: 100%;
-  height: 300px;
-  overflow: hidden;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
-
-.carousel-track {
-  display: flex;
-  transition: transform 0.5s ease;
-  height: 100%;
-}
-
-.carousel-slide {
-  min-width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.carousel-slide img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.carousel-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255,255,255,0.8);
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 18px;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.3s ease;
-}
-
-.carousel-btn:hover {
-  background: white;
-  transform: translateY(-50%) scale(1.1);
-}
-
-.prev {
-  left: 10px;
-}
-
-.next {
-  right: 10px;
-}
-
 /* Floating Elements */
 .floating-balloon {
   position: fixed;
@@ -308,3 +246,105 @@ section {
   50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
+
+
+
+/* slider */
+.banner {
+  width: 100%;
+  height: 100vh;
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.banner .slider {
+  position: absolute;
+  width: 200px;
+  height: 250px;
+  top: 10%;
+  left: calc(50% - 100px);
+  transform-style: preserve-3d;
+  transform: perspective(1000px);
+  animation: autoRun 20s linear infinite;
+  z-index: 4;
+}
+
+@keyframes autoRun {
+  from {
+    transform: perspective(1000px)  rotateX(-16deg) rotateY(0deg);
+  }
+  to {
+    transform: perspective(1000px)  rotateX(-16deg) rotateY(360deg);
+  }
+}
+
+.banner .slider .item {
+  position: absolute;
+  inset: 0 0 0 0;
+  transform:
+    rotateY(calc( (var(--position) - 1) * (360 / var(--quantity)) * 1deg))
+    translateZ(550px);
+}
+
+.banner .slider .item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.banner .content {
+  position: absolute;
+  bottom: 0;
+  left: 5%;
+  transform: translateX(-50px);
+  width: min(1400px, 100vw);
+  height: max-content;
+  padding-bottom: 100px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 3;
+}
+
+.banner .content h1 {
+  font-family: 'ICA Rubrik';
+  font-size: 12em;
+  line-height: 1em;
+  color:#3498db;
+  position: relative;
+}
+
+.banner .content h1::after{
+  position: absolute;
+  inset: 0 0 0 0;
+  content: attr(data-conent);
+  z-index: 2;
+  -webkit-text-stroke: 2px #ffff;
+  color: transparent;
+}
+
+.banner .content .author {
+  font-family: Poppins;
+  text-align:right;
+  max-width:200px;
+}
+
+.banner .content h2 {
+  font-size: 3em;
+}
+
+/* .banner .content .model{
+  background-image: url(/imgs/model.png);
+  width: 100%;
+  height: 75vh;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background-size: auto 130%;
+  background-repeat: no-repeat;
+  background-position: top center;
+  z-index: 1;
+} */
