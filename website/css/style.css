@@ -9,8 +9,6 @@ body {
 h1 {
     font-size: 2.5em;
     color: #3498db;
-    opacity: 0;
-    transform: translateY(-30px);
 }
 
 button {
@@ -29,24 +27,6 @@ button:hover {
     background: #3498db;
 }
 
-.hidden {
-    display: none;
-}
-
-@keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity: 1;}
-}
-
-#messages {
-    background-color: #e6f0ff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
-    margin: 20px auto;
-    max-width: 600px;
-}
-
 section {
     margin: 40px auto;
     max-width: 700px;
@@ -60,8 +40,6 @@ section {
     display: flex;
     justify-content: center;
     gap: 20px;
-    opacity: 0;
-    transform: scale(0.8);
 }
 
 .time-unit {
@@ -71,45 +49,11 @@ section {
     color: #ff69b4;
 }
 
-.flip {
-  display: inline-block;
-  font-size: 36px;
-  font-weight: bold;
-  background: #2980b9;
-  color: #fff;
-  padding: 10px 15px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  transform-origin: bottom;
-  animation: flip 0.8s ease-in-out;
-}
-
 .label {
     display: block;
     font-size: 20px;
     margin-right: 10px;
     color: #555;
-}
-
-#timer span {
-    display: inline-block;
-    text-align: center;
-    margin: 10px 0;
-}
-
-@keyframes flip {
-  0% { transform: rotateX(0deg); }
-  50% { transform: rotateX(-90deg); }
-  100% { transform: rotateX(0deg); }
-}
-
-#revealBtn {
-    opacity: 0;
-    transition: opacity 1s ease;
-}
-
-#revealBtn.show {
-    opacity: 1;
 }
 
 #messagesSection {
@@ -121,7 +65,6 @@ section {
     box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
     margin: 20px auto;
     max-width: 600px;
-    transform: translateY(20px);
 }
 
 #messagesWall {
@@ -130,6 +73,7 @@ section {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 16px;
   opacity: 0;
+  pointer-events: none;
 }
 
 .messageCard {
@@ -138,8 +82,6 @@ section {
   padding: 16px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   word-wrap: break-word;
-  opacity: 0;
-  transform: translateY(30px) scale(0.9);
 }
 
 .messageCard strong {
@@ -180,4 +122,189 @@ section {
 
 .reactBtn.reacted {
   background: rgba(255, 0, 0, 0.2);
+}
+
+/* Birthday mode styles */
+.birthday-mode #messagesSection {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.birthday-mode #messagesWall {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.birthday-mode #message {
+  display: none !important;
+}
+
+/* Countdown mode styles */
+.countdown-mode #message {
+  display: block !important;
+}
+
+.countdown-mode #messagesSection {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.countdown-mode #messagesWall {
+  opacity: 0 !important;
+}
+
+.fade-in {
+  opacity: 1 !important;
+}
+
+.scale-normal {
+  transform: scale(1) !important;
+}
+
+.translate-zero {
+  transform: translateY(0) !important;
+}
+
+/* Photo Carousel */
+#photoCarousel {
+  margin: 40px auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+
+
+.carousel-container {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s ease;
+  height: 100%;
+}
+
+.carousel-slide {
+  min-width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.8);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.carousel-btn:hover {
+  background: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.prev {
+  left: 10px;
+}
+
+.next {
+  right: 10px;
+}
+
+/* Floating Elements */
+.floating-balloon {
+  position: fixed;
+  font-size: 25px;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.floating-sparkle {
+  position: fixed;
+  font-size: 15px;
+  pointer-events: none;
+  z-index: 60;
+}
+
+/* Glowing border for timer */
+#timer {
+  box-shadow: 0 0 20px rgba(255, 105, 180, 0.3);
+  border-radius: 15px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+/* Scroll animations */
+.scroll-animate {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.8s ease;
+}
+
+.scroll-animate.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Enhanced message section */
+#messagesSection {
+  background: linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(163, 201, 247, 0.1));
+  border-radius: 20px;
+  padding: 40px 20px;
+  margin: 60px auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+#messagesSection h2 {
+  font-size: 2.5em;
+  margin-bottom: 30px;
+  background: linear-gradient(45deg, #ff69b4, #3498db);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#messageButtonContainer {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+}
+.birthday-mode #messageButtonContainer {
+  display: none;
+}
+
+#messageButtonContainer button {
+  animation: pulse 1.5s infinite;
+  background-color: #ff69b4;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1.2em;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
