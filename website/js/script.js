@@ -1,6 +1,6 @@
 // Countdown Timer
 const timerEl = document.getElementById('timer');
-const targetDate = new Date("2025-08-23T10:20:00");
+const targetDate = new Date("2025-09-04T00:00:00");
 
 function flipNumber(id, newValue) {
   const element = document.getElementById(id);
