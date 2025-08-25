@@ -1,11 +1,20 @@
 // Countdown Timer
 const timerEl = document.getElementById('timer');
-const targetDate = new Date("2025-08-04T00:00:00");
+const targetDate = new Date("2025-09-04T00:00:00");
 
 // Pagination variables
 let allMessages = [];
 let currentPage = 1;
-const messagesPerPage = 6;
+let messagesPerPage = 6;
+
+// Dynamic messages per page based on screen size
+function updateMessagesPerPage() {
+  if (window.innerWidth <= 768) {
+    messagesPerPage = 3;
+  } else {
+    messagesPerPage = 6;
+  }
+}
 
 function flipNumber(id, newValue) {
   const element = document.getElementById(id);
@@ -257,8 +266,75 @@ function initScrollAnimations() {
   });
 }
 
+// Personal Letter functionality
+function initPersonalLetter() {
+  const trigger = document.getElementById('secretTrigger');
+  const letter = document.getElementById('personalLetter');
+  const closeBtn = document.getElementById('closeLetter');
+  
+  if (trigger && letter && closeBtn) {
+    trigger.addEventListener('click', () => {
+      letter.classList.add('show');
+      gsap.from('.letter-content', {
+        duration: 0.5,
+        scale: 0.5,
+        rotation: 5,
+        ease: 'back.out(1.7)'
+      });
+    });
+    
+    closeBtn.addEventListener('click', () => {
+      letter.classList.remove('show');
+    });
+    
+    letter.addEventListener('click', (e) => {
+      if (e.target === letter) {
+        letter.classList.remove('show');
+      }
+    });
+  }
+}
+
+// Simple scroll down indicator
+function addScrollHint() {
+  const hint = document.createElement('div');
+  hint.innerHTML = '↓ Scroll Down ↓';
+  hint.style.cssText = `
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    color: #2c3e50;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 2px solid #3498db;
+    z-index: 1000;
+    pointer-events: none;
+    backdrop-filter: blur(10px);
+  `;
+  document.body.appendChild(hint);
+  
+  gsap.timeline({ repeat: -1 })
+    .to(hint, { duration: 1, y: -15, ease: 'power2.inOut' })
+    .to(hint, { duration: 1, y: 0, ease: 'power2.inOut' })
+    .to(hint, { duration: 0.3, scale: 1.1, ease: 'back.out(1.7)' })
+    .to(hint, { duration: 0.3, scale: 1, ease: 'back.out(1.7)' });
+  
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 100) {
+      gsap.to(hint, { duration: 0.5, opacity: 0 });
+    }
+  });
+}
+
 // Initialize everything
 initScrollAnimations();
+initPersonalLetter();
+addScrollHint();
 
 // Start ambient animations
 setInterval(createFloatingHeart, 3000);
@@ -279,8 +355,9 @@ function fetchMessages() {
 }
 
 function showMessages(data) {
-  allMessages = data;
+  allMessages = data.filter(entry => entry["Name pls"] && entry["Name pls"].trim() !== "Anonymous");
   currentPage = 1;
+  updateMessagesPerPage();
   displayPage(currentPage);
   setupPagination();
 }
@@ -411,6 +488,7 @@ function setupPagination() {
   prevBtn.onclick = () => {
     if (currentPage > 1) {
       currentPage--;
+      updateMessagesPerPage();
       displayPage(currentPage);
       setupPagination();
       document.getElementById('messagesSection').scrollIntoView({ behavior: 'smooth' });
@@ -420,9 +498,17 @@ function setupPagination() {
   nextBtn.onclick = () => {
     if (currentPage < totalPages) {
       currentPage++;
+      updateMessagesPerPage();
       displayPage(currentPage);
       setupPagination();
       document.getElementById('messagesSection').scrollIntoView({ behavior: 'smooth' });
     }
   };
+  
+  // Update on window resize
+  window.addEventListener('resize', () => {
+    updateMessagesPerPage();
+    displayPage(currentPage);
+    setupPagination();
+  });
 }
