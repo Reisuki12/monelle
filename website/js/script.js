@@ -1,6 +1,11 @@
 // Countdown Timer
 const timerEl = document.getElementById('timer');
-const targetDate = new Date("2025-09-04T00:00:00");
+const targetDate = new Date("2025-08-04T00:00:00");
+
+// Pagination variables
+let allMessages = [];
+let currentPage = 1;
+const messagesPerPage = 6;
 
 function flipNumber(id, newValue) {
   const element = document.getElementById(id);
@@ -243,23 +248,6 @@ function initScrollAnimations() {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible');
-        
-        // Special animation for message cards
-        if (entry.target.id === 'messagesSection') {
-          setTimeout(() => {
-            const cards = document.querySelectorAll('.messageCard');
-            cards.forEach((card, index) => {
-              gsap.from(card, {
-                duration: 0.6,
-                y: 30,
-                opacity: 0,
-                scale: 0.9,
-                delay: index * 0.1,
-                ease: 'back.out(1.2)'
-              });
-            });
-          }, 300);
-        }
       }
     });
   }, { threshold: 0.2 });
@@ -291,29 +279,111 @@ function fetchMessages() {
 }
 
 function showMessages(data) {
+  allMessages = data;
+  currentPage = 1;
+  displayPage(currentPage);
+  setupPagination();
+}
+
+function displayPage(page) {
   const wall = document.getElementById("messagesWall");
   wall.innerHTML = "";
-
-  data.forEach((entry, index) => {
+  
+  const startIndex = (page - 1) * messagesPerPage;
+  const endIndex = startIndex + messagesPerPage;
+  const pageMessages = allMessages.slice(startIndex, endIndex);
+  
+  pageMessages.forEach((entry, index) => {
     const msg = document.createElement("div");
-    msg.className = "messageCard";
+    const cardThemes = ['theme-pink', 'theme-blue', 'theme-purple', 'theme-mint', 'theme-peach'];
+    const randomTheme = cardThemes[Math.floor(Math.random() * cardThemes.length)];
+    msg.className = `messageCard ${randomTheme}`;
+    
+    const birthdayEmojis = ['🎉', '🎂', '🎈', '🎁', '✨', '🎆', '🎇'];
+    const randomEmoji = birthdayEmojis[Math.floor(Math.random() * birthdayEmojis.length)];
+    
+    const messageId = `msg_${startIndex + index}`;
+    const savedReactions = JSON.parse(localStorage.getItem('reactions') || '{}');
+    const reactions = savedReactions[messageId] || { heart: 0, laugh: 0, party: 0 };
+    
     msg.innerHTML = `
-      <strong>${entry["Name pls"] || "Anonymous"}</strong><br>
+      <div class="card-header">
+        <span class="card-emoji">${randomEmoji}</span>
+        <strong>${entry["Name pls"] || "Anonymous"}</strong>
+      </div>
       <p>${entry["Lapag niyo na yung bday greetings niyo kay mics"] || ""}</p>
       <div class="reactions">
-        <button class="reactBtn">❤️ <span class="count">0</span></button>
+        <button class="reactBtn" data-reaction="heart" data-message-id="${messageId}">❤️ <span class="count">${reactions.heart}</span></button>
+        <button class="reactBtn" data-reaction="laugh" data-message-id="${messageId}">😂 <span class="count">${reactions.laugh}</span></button>
+        <button class="reactBtn" data-reaction="party" data-message-id="${messageId}">🎉 <span class="count">${reactions.party}</span></button>
       </div>
     `;
+    
+    // Set initial state
+    gsap.set(msg, { y: 30, opacity: 0, scale: 0.9 });
     wall.appendChild(msg);
+    
+    // Animate to final state
+    gsap.to(msg, {
+      duration: 0.6,
+      y: 0,
+      opacity: 1,
+      scale: 1,
+      delay: index * 0.1,
+      ease: 'back.out(1.2)'
+    });
+    
+    // Add hover particle effect
+    msg.addEventListener('mouseenter', () => {
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+          const particle = document.createElement('div');
+          particle.innerHTML = ['✨', '💫', '⭐'][Math.floor(Math.random() * 3)];
+          particle.style.cssText = `
+            position: absolute;
+            pointer-events: none;
+            font-size: 12px;
+            z-index: 1000;
+          `;
+          
+          const rect = msg.getBoundingClientRect();
+          particle.style.left = rect.left + Math.random() * rect.width + 'px';
+          particle.style.top = rect.top + Math.random() * rect.height + 'px';
+          
+          document.body.appendChild(particle);
+          
+          gsap.to(particle, {
+            duration: 1.5,
+            y: -50,
+            x: (Math.random() - 0.5) * 100,
+            opacity: 0,
+            scale: 0,
+            ease: 'power2.out',
+            onComplete: () => particle.remove()
+          });
+        }, i * 100);
+      }
+    });
   });
-
+  
   document.querySelectorAll(".reactBtn").forEach(btn => {
     btn.addEventListener("click", () => {
       const countEl = btn.querySelector(".count");
+      const messageId = btn.dataset.messageId;
+      const reactionType = btn.dataset.reaction;
+      
       let count = parseInt(countEl.textContent, 10);
       countEl.textContent = count + 1;
       btn.classList.add("reacted");
-
+      
+      // Save to localStorage
+      const savedReactions = JSON.parse(localStorage.getItem('reactions') || '{}');
+      if (!savedReactions[messageId]) {
+        savedReactions[messageId] = { heart: 0, laugh: 0, party: 0 };
+      }
+      savedReactions[messageId][reactionType] = count + 1;
+      localStorage.setItem('reactions', JSON.stringify(savedReactions));
+      
       gsap.fromTo(btn, 
         { scale: 1 },
         {
@@ -326,4 +396,33 @@ function showMessages(data) {
       );
     });
   });
+}
+
+function setupPagination() {
+  const totalPages = Math.ceil(allMessages.length / messagesPerPage);
+  const pageInfo = document.getElementById("pageInfo");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  
+  pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+  prevBtn.disabled = currentPage === 1;
+  nextBtn.disabled = currentPage === totalPages;
+  
+  prevBtn.onclick = () => {
+    if (currentPage > 1) {
+      currentPage--;
+      displayPage(currentPage);
+      setupPagination();
+      document.getElementById('messagesSection').scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+  
+  nextBtn.onclick = () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      displayPage(currentPage);
+      setupPagination();
+      document.getElementById('messagesSection').scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 }
