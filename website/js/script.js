@@ -1,6 +1,6 @@
 // Countdown Timer
 const timerEl = document.getElementById('timer');
-const targetDate = new Date("2025-09-04T00:00:00");
+const targetDate = new Date("2025-08-04T00:00:00");
 
 // Pagination variables
 let allMessages = [];
@@ -344,7 +344,29 @@ setInterval(createEdgeSparkle, 1500);
 updateTimer();
 const interval = setInterval(updateTimer, 1000);
 
+function showLoadingCards() {
+  const wall = document.getElementById('messagesWall');
+  wall.innerHTML = '';
+  
+  for (let i = 0; i < messagesPerPage; i++) {
+    const skeleton = document.createElement('div');
+    skeleton.className = 'skeleton-card';
+    gsap.set(skeleton, { opacity: 0, y: 20 });
+    wall.appendChild(skeleton);
+    
+    gsap.to(skeleton, {
+      duration: 0.4,
+      opacity: 1,
+      y: 0,
+      delay: i * 0.1,
+      ease: 'power2.out'
+    });
+  }
+}
+
 function fetchMessages() {
+  showLoadingCards();
+  
   fetch(`https://opensheet.elk.sh/1Gv9K4j6Xg0w9iN9xNgwyteZiKsL7dNPNmgSOSNjOw88/hi`)
     .then(res => res.json())
     .then(showMessages)
@@ -358,14 +380,39 @@ function showMessages(data) {
   allMessages = data.filter(entry => entry["Name pls"] && entry["Name pls"].trim() !== "Anonymous");
   currentPage = 1;
   updateMessagesPerPage();
-  displayPage(currentPage);
-  setupPagination();
+  
+  const wall = document.getElementById('messagesWall');
+  gsap.to(wall.children, {
+    duration: 0.3,
+    opacity: 0,
+    scale: 0.9,
+    stagger: 0.05,
+    ease: 'power2.in',
+    onComplete: () => {
+      displayPage(currentPage);
+      setupPagination();
+    }
+  });
 }
 
 function displayPage(page) {
   const wall = document.getElementById("messagesWall");
-  wall.innerHTML = "";
   
+  // Smooth transition out
+  gsap.to(wall.children, {
+    duration: 0.3,
+    opacity: 0,
+    y: -20,
+    stagger: 0.05,
+    ease: 'power2.in',
+    onComplete: () => {
+      wall.innerHTML = "";
+      renderCards(page, wall);
+    }
+  });
+}
+
+function renderCards(page, wall) {
   const startIndex = (page - 1) * messagesPerPage;
   const endIndex = startIndex + messagesPerPage;
   const pageMessages = allMessages.slice(startIndex, endIndex);
@@ -376,84 +423,112 @@ function displayPage(page) {
     const randomTheme = cardThemes[Math.floor(Math.random() * cardThemes.length)];
     msg.className = `messageCard ${randomTheme}`;
     
-    const birthdayEmojis = ['🎉', '🎂', '🎈', '🎁', '✨', '🎆', '🎇'];
-    const randomEmoji = birthdayEmojis[Math.floor(Math.random() * birthdayEmojis.length)];
-    
     const messageId = `msg_${startIndex + index}`;
     const savedReactions = JSON.parse(localStorage.getItem('reactions') || '{}');
     const reactions = savedReactions[messageId] || { heart: 0, laugh: 0, party: 0 };
     
     msg.innerHTML = `
-      <div class="card-header">
-        <span class="card-emoji">${randomEmoji}</span>
-        <strong>${entry["Name pls"] || "Anonymous"}</strong>
+      <div class="card-face card-front">
+        <div class="card-name">${entry["Name pls"] || "Anonymous"}</div>
       </div>
-      <p>${entry["Lapag niyo na yung bday greetings niyo kay mics"] || ""}</p>
-      <div class="reactions">
+    `;
+    
+    msg.dataset.messageId = messageId;
+    msg.dataset.reactions = JSON.stringify(reactions);
+    
+    gsap.set(msg, { 
+      y: 50, 
+      opacity: 0, 
+      scale: 0.8,
+      rotationY: 15
+    });
+    wall.appendChild(msg);
+    
+    gsap.to(msg, {
+      duration: 0.8,
+      y: 0,
+      opacity: 1,
+      scale: 1,
+      rotationY: 0,
+      delay: index * 0.15,
+      ease: 'back.out(1.7)',
+      onComplete: () => {
+        gsap.to(msg, {
+          duration: 0.3,
+          scale: 1.02,
+          yoyo: true,
+          repeat: 1,
+          ease: 'power2.inOut'
+        });
+      }
+    });
+    
+    msg.addEventListener('click', () => {
+      msg.classList.add('opened');
+      const currentReactions = JSON.parse(msg.dataset.reactions || JSON.stringify(reactions));
+      showZoomedCard(entry, messageId, currentReactions, msg);
+    });
+  });
+}
+
+function showZoomedCard(entry, messageId, reactions, cardElement) {
+  const overlay = document.createElement('div');
+  overlay.className = 'card-zoom-overlay';
+  
+  overlay.innerHTML = `
+    <div class="zoomed-card">
+      <button class="zoom-close">×</button>
+      <div class="zoom-name">${entry["Name pls"] || "Anonymous"}</div>
+      <div class="zoom-message">${entry["Lapag niyo na yung bday greetings niyo kay mics"] || ""}</div>
+      <div class="zoom-reactions">
         <button class="reactBtn" data-reaction="heart" data-message-id="${messageId}">❤️ <span class="count">${reactions.heart}</span></button>
         <button class="reactBtn" data-reaction="laugh" data-message-id="${messageId}">😂 <span class="count">${reactions.laugh}</span></button>
         <button class="reactBtn" data-reaction="party" data-message-id="${messageId}">🎉 <span class="count">${reactions.party}</span></button>
       </div>
-    `;
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+  
+  gsap.fromTo(overlay, { opacity: 0 }, { duration: 0.3, opacity: 1 });
+  gsap.fromTo('.zoomed-card', { scale: 0.5 }, { duration: 0.5, scale: 1, ease: 'back.out(1.7)' });
+  
+  overlay.classList.add('active');
+  
+  function closeEnvelope() {
+    // Update main card reactions before closing
+    const savedReactions = JSON.parse(localStorage.getItem('reactions') || '{}');
+    const currentReactions = savedReactions[messageId] || { heart: 0, laugh: 0, party: 0 };
     
-    // Set initial state
-    gsap.set(msg, { y: 30, opacity: 0, scale: 0.9 });
-    wall.appendChild(msg);
-    
-    // Animate to final state
-    gsap.to(msg, {
-      duration: 0.6,
-      y: 0,
-      opacity: 1,
-      scale: 1,
-      delay: index * 0.1,
-      ease: 'back.out(1.2)'
-    });
-    
-    // Add hover particle effect
-    msg.addEventListener('mouseenter', () => {
-      for (let i = 0; i < 3; i++) {
-        setTimeout(() => {
-          const particle = document.createElement('div');
-          particle.innerHTML = ['✨', '💫', '⭐'][Math.floor(Math.random() * 3)];
-          particle.style.cssText = `
-            position: absolute;
-            pointer-events: none;
-            font-size: 12px;
-            z-index: 1000;
-          `;
-          
-          const rect = msg.getBoundingClientRect();
-          particle.style.left = rect.left + Math.random() * rect.width + 'px';
-          particle.style.top = rect.top + Math.random() * rect.height + 'px';
-          
-          document.body.appendChild(particle);
-          
-          gsap.to(particle, {
-            duration: 1.5,
-            y: -50,
-            x: (Math.random() - 0.5) * 100,
-            opacity: 0,
-            scale: 0,
-            ease: 'power2.out',
-            onComplete: () => particle.remove()
-          });
-        }, i * 100);
+    // Find and update main card if it exists
+    const mainCard = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (mainCard) {
+      const mainCardReactions = mainCard.closest('.messageCard');
+      if (mainCardReactions) {
+        // Store updated reactions for next time card is opened
+        mainCardReactions.dataset.reactions = JSON.stringify(currentReactions);
       }
-    });
+    }
+    
+    cardElement.classList.remove('opened');
+    gsap.to(overlay, { duration: 0.3, opacity: 0, onComplete: () => overlay.remove() });
+  }
+  
+  overlay.querySelector('.zoom-close').addEventListener('click', closeEnvelope);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeEnvelope();
   });
   
-  document.querySelectorAll(".reactBtn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const countEl = btn.querySelector(".count");
+  overlay.querySelectorAll('.reactBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const countEl = btn.querySelector('.count');
       const messageId = btn.dataset.messageId;
       const reactionType = btn.dataset.reaction;
       
       let count = parseInt(countEl.textContent, 10);
       countEl.textContent = count + 1;
-      btn.classList.add("reacted");
+      btn.classList.add('reacted');
       
-      // Save to localStorage
       const savedReactions = JSON.parse(localStorage.getItem('reactions') || '{}');
       if (!savedReactions[messageId]) {
         savedReactions[messageId] = { heart: 0, laugh: 0, party: 0 };
@@ -461,16 +536,7 @@ function displayPage(page) {
       savedReactions[messageId][reactionType] = count + 1;
       localStorage.setItem('reactions', JSON.stringify(savedReactions));
       
-      gsap.fromTo(btn, 
-        { scale: 1 },
-        {
-          duration: 0.3,
-          scale: 1.2,
-          ease: "back.out(2)",
-          yoyo: true,
-          repeat: 1
-        }
-      );
+      gsap.fromTo(btn, { scale: 1 }, { duration: 0.3, scale: 1.2, ease: "back.out(2)", yoyo: true, repeat: 1 });
     });
   });
 }
